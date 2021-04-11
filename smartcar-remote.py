@@ -7,26 +7,52 @@ import rpyc
 def handleAxisXYZ(axisXYZ):
     if (axisXYZ[0] == 0 and axisXYZ[1] < 0 and axisXYZ[2] == 0):
         carStateService.root.set_state("move", "fwd")
+        carStateService.root.set_state("brakelights", "off")
         print("fwd")
     elif (axisXYZ[0] == 0 and axisXYZ[1] > 0 and axisXYZ[2] == 0):
         carStateService.root.set_state("move", "rev")
+        carStateService.root.set_state("brakelights", "rev")
         print("rev")
     elif (axisXYZ[0] < 0 and axisXYZ[1] < 0 and axisXYZ[2] == 0):
         carStateService.root.set_state("move", "fwd-left")
+        carStateService.root.set_state("brakelights", "off")
         print("fwd-left")
     elif (axisXYZ[0] > 0 and axisXYZ[1] < 0 and axisXYZ[2] == 0):
         carStateService.root.set_state("move", "fwd-right")
+        carStateService.root.set_state("brakelights", "off")
         print("fwd-right")
     elif (axisXYZ[0] < 0 and axisXYZ[1] > 0 and axisXYZ[2] == 0):
         carStateService.root.set_state("move", "rev-left")
+        carStateService.root.set_state("brakelights", "rev")
         print("rev-left")
     elif (axisXYZ[0] > 0 and axisXYZ[1] > 0 and axisXYZ[2] == 0):
         carStateService.root.set_state("move", "rev-right")
+        carStateService.root.set_state("brakelights", "rev")
         print("rev-right")
     elif (axisXYZ[0] == 0 and axisXYZ[1] == 0 and axisXYZ[2] == 0):
         carStateService.root.set_state("move", "stop")
+        carStateService.root.set_state("brakelights", "on")
         print("stop")
         
+def handleBtns(btns):
+    if (btns[4]):
+        state = carStateService.root.get_state()
+        print("state:", state)
+        signalsMode = state["signals"]
+        if (signalsMode != "left"):
+            carStateService.root.set_state("signals", "left")
+        elif (signalsMode == "left"):
+            carStateService.root.set_state("signals", "off")
+
+    if (btns[5]):
+        state = carStateService.root.get_state()
+        print("state:", state)
+        signalsMode = state["signals"]
+        if (signalsMode != "right"):
+            carStateService.root.set_state("signals", "right")
+        elif (signalsMode == "right"):
+            carStateService.root.set_state("signals", "off")
+
 
 print("start")
 
@@ -58,11 +84,13 @@ while run:
 
         if info.dwButtons:
             print("buttons: ", btns)
+            handleBtns(btns)
         if any([abs(v) > 10 for v in axisXYZ]):
             print("axis:", axisXYZ)
             handleAxisXYZ(axisXYZ)
         else:
             carStateService.root.set_state("move", "stop")
+            carStateService.root.set_state("brakelights", "on")
         if any([abs(v) > 10 for v in axisRUV]):
             print("roation axis:", axisRUV)
 
